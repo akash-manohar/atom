@@ -5,6 +5,7 @@ React = require 'react-atom-fork'
 scrollbarStyle = require 'scrollbar-style'
 {Range, Point} = require 'text-buffer'
 grim = require 'grim'
+{CompositeDisposable} = require 'event-kit'
 
 GutterComponent = require './gutter-component'
 InputComponent = require './input-component'
@@ -353,6 +354,7 @@ TextEditorComponent = React.createClass
   observeEditor: ->
     {editor} = @props
     @subscribe editor.onDidChange(@onScreenLinesChanged)
+    @subscribe editor.observeGrammar(@onGrammarChanged)
     @subscribe editor.observeCursors(@onCursorAdded)
     @subscribe editor.observeSelections(@onSelectionAdded)
     @subscribe editor.observeDecorations(@onDecorationAdded)
@@ -524,10 +526,19 @@ TextEditorComponent = React.createClass
     return
 
   observeConfig: ->
-    @subscribe atom.config.observe 'editor.showIndentGuide', @setShowIndentGuide
-    @subscribe atom.config.observe 'editor.showLineNumbers', @setShowLineNumbers
-    @subscribe atom.config.observe 'editor.scrollSensitivity', @setScrollSensitivity
     @subscribe atom.config.observe 'editor.useHardwareAcceleration', @setUseHardwareAcceleration
+
+  onGrammarChanged: ->
+    {editor} = @props
+
+    @scopedPropertySubscriptions?.dispose()
+    @scopedPropertySubscriptions = subscriptions = new CompositeDisposable
+
+    scopeDescriptor = editor.getGrammarScopeDescriptor()
+
+    subscriptions.add atom.config.observe scopeDescriptor, 'editor.showIndentGuide', @setShowIndentGuide
+    subscriptions.add atom.config.observe scopeDescriptor, 'editor.showLineNumbers', @setShowLineNumbers
+    subscriptions.add atom.config.observe scopeDescriptor, 'editor.scrollSensitivity', @setScrollSensitivity
 
   onFocus: ->
     @refs.input.focus() if @isMounted()
@@ -552,7 +563,6 @@ TextEditorComponent = React.createClass
     editor.selectLeft() if selectedLength is 1
 
     inputNode.value = event.data if editor.insertText(event.data)
-
 
   onInputFocused: ->
     @setState(focused: true)
