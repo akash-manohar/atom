@@ -2664,7 +2664,7 @@ class TextEditor extends Model
   ###
 
   shouldAutoIndent: ->
-    atom.config.get("editor.autoIndent")
+    atom.config.get(@getGrammarScopeDescriptor(), "editor.autoIndent")
 
   shouldShowInvisibles: ->
     not @mini and atom.config.get(@getGrammarScopeDescriptor(), 'editor.showInvisibles')
