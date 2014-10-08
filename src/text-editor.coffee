@@ -163,7 +163,7 @@ class TextEditor extends Model
     @scopedConfigSubscriptions?.dispose()
     @scopedConfigSubscriptions = subscriptions = new CompositeDisposable
 
-    scopeDescriptor = @getGrammarScopeDescriptor()
+    scopeDescriptor = @getRootScopeDescriptor()
 
     subscriptions.add atom.config.onDidChange scopeDescriptor, 'editor.showInvisibles', => @updateInvisibles()
     subscriptions.add atom.config.onDidChange scopeDescriptor, 'editor.invisibles', => @updateInvisibles()
@@ -2367,7 +2367,7 @@ class TextEditor extends Model
     if cursor = @getLastCursor()
       cursor.getScopes()
     else
-      @getGrammarScopeDescriptor()
+      @getRootScopeDescriptor()
   getCursorScopes: ->
     deprecate 'Use TextEditor::scopesAtCursor() instead'
     @scopesAtCursor()
@@ -2394,8 +2394,8 @@ class TextEditor extends Model
   bufferRangeForScopeAtCursor: (selector) ->
     @displayBuffer.bufferRangeForScopeAtPosition(selector, @getCursorBufferPosition())
 
-  getGrammarScopeDescriptor: ->
-    @displayBuffer.getGrammarScopeDescriptor()
+  getRootScopeDescriptor: ->
+    @displayBuffer.getRootScopeDescriptor()
 
   logCursorScope: ->
     console.log @scopesAtCursor()
@@ -2666,14 +2666,14 @@ class TextEditor extends Model
   ###
 
   shouldAutoIndent: ->
-    atom.config.get(@getGrammarScopeDescriptor(), "editor.autoIndent")
+    atom.config.get(@getRootScopeDescriptor(), "editor.autoIndent")
 
   shouldShowInvisibles: ->
-    not @mini and atom.config.get(@getGrammarScopeDescriptor(), 'editor.showInvisibles')
+    not @mini and atom.config.get(@getRootScopeDescriptor(), 'editor.showInvisibles')
 
   updateInvisibles: ->
     if @shouldShowInvisibles()
-      @displayBuffer.setInvisibles(atom.config.get(@getGrammarScopeDescriptor(), 'editor.invisibles'))
+      @displayBuffer.setInvisibles(atom.config.get(@getRootScopeDescriptor(), 'editor.invisibles'))
     else
       @displayBuffer.setInvisibles(null)
 
